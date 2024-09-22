@@ -2,6 +2,7 @@ package auth
 
 import (
 	"encoding/json"
+	"log"
 	"work-space-backend/utils"
 
 	"github.com/gorilla/sessions"
@@ -9,7 +10,7 @@ import (
 )
 
 func GetSessionData(c echo.Context) (utils.TokenDetail, utils.UserDetails, *sessions.Session) {
-
+	log.Printf("cookies%+v", c.Cookies())
 	sess, _ := Store.Get(c.Request(), "session")
 
 	var token_details utils.TokenDetail
