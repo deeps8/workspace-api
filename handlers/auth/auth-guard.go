@@ -10,7 +10,6 @@ import (
 )
 
 func GetSessionData(c echo.Context) (utils.TokenDetail, utils.UserDetails, *sessions.Session) {
-	log.Printf("cookies%+v", c.Cookies())
 	sess, _ := Store.Get(c.Request(), "session")
 
 	var token_details utils.TokenDetail
@@ -20,6 +19,7 @@ func GetSessionData(c echo.Context) (utils.TokenDetail, utils.UserDetails, *sess
 	json.Unmarshal(sess_token_details, &token_details)
 	json.Unmarshal(sess_user_details, &user_details)
 
+	log.Printf("cookies%+v\n\n%+v\n\n%+v\n\n%+v", c.Cookies(), sess, user_details, token_details)
 	if token_details.Valid() {
 		c.Set("user_details", user_details)
 	} else {
