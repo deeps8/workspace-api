@@ -44,17 +44,17 @@ func GoogleRedirect(c echo.Context) error {
 	// convert the auth-code into token
 	token, terr := GoogleConfig.Exchange(context.Background(), authCode)
 	if terr != nil {
-		return c.JSON(http.StatusInternalServerError, utils.Error{Message: "Something went wrong while fetching token"})
+		return c.JSON(http.StatusInternalServerError, utils.Res{Message: "Something went wrong while fetching token"})
 	}
 	if token == nil {
-		return c.JSON(http.StatusInternalServerError, utils.Error{Message: "No Token"})
+		return c.JSON(http.StatusInternalServerError, utils.Res{Message: "No Token"})
 	}
 
 	// create google-http-client and get the response
 	glClient := GoogleConfig.Client(context.Background(), token)
 	glRes, glErr := glClient.Get(GoogleOauthURL + token.AccessToken)
 	if glErr != nil {
-		return c.JSON(http.StatusInternalServerError, utils.Error{Message: "Something went wrong while fetching user details"})
+		return c.JSON(http.StatusInternalServerError, utils.Res{Message: "Something went wrong while fetching user details"})
 	}
 	defer glRes.Body.Close()
 
@@ -62,13 +62,13 @@ func GoogleRedirect(c echo.Context) error {
 	var userDetails utils.UserDetails
 	derr := json.NewDecoder(glRes.Body).Decode(&userDetails)
 	if derr != nil {
-		return c.JSON(http.StatusAccepted, utils.Error{Message: "JSON decode error"})
+		return c.JSON(http.StatusAccepted, utils.Res{Message: "JSON decode error"})
 	}
 
 	// store user details in DB
 	userid, iserr := database.InsertUser(c, userDetails)
 	if iserr != nil {
-		return c.JSON(http.StatusInternalServerError, utils.Error{Message: "Error in storing user details"})
+		return c.JSON(http.StatusInternalServerError, utils.Res{Message: "Error in storing user details"})
 	}
 	userDetails.Id = userid
 
@@ -97,7 +97,7 @@ func GoogleRedirect(c echo.Context) error {
 
 	sOk := sess.Save(c.Request(), c.Response().Writer)
 	if sOk != nil {
-		return c.JSON(http.StatusInternalServerError, utils.Error{Message: "Error in session creation"})
+		return c.JSON(http.StatusInternalServerError, utils.Res{Message: "Error in session creation"})
 	}
 
 	// redirect the user to frontend.
@@ -108,7 +108,19 @@ func GoogleRedirect(c echo.Context) error {
 func GetUserFromSession(c echo.Context) error {
 	_, user_details, _ := GetSessionData(c)
 	if user_details.Id == "" {
-		return c.JSON(http.StatusUnauthorized, utils.Error{Message: "User is not authorized"})
+		return c.JSON(http.StatusUnauthorized, utils.Res{Message: "User is not authorized"})
 	}
 	return c.JSON(http.StatusOK, user_details)
+}
+
+func LogoutUser(c echo.Context) error {
+	sess, _ := Store.Get(c.Request(), "session")
+	sess.Values["tokenDetails"] = nil
+	sess.Values["userDetails"] = nil
+	sess.Options.MaxAge = -1
+
+	sess.Save(c.Request(), c.Response().Writer)
+
+	c.Set("userDetails", nil)
+	return c.JSON(http.StatusOK, nil)
 }

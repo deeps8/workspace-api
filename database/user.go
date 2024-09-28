@@ -37,3 +37,31 @@ func InsertUser(c echo.Context, user utils.UserDetails) (string, error) {
 
 	return id, nil
 }
+
+func GetAllUsers(uid string) ([]utils.UserDetails, error) {
+	var users []utils.UserDetails = make([]utils.UserDetails, 0)
+
+	stmt, err := Db.Prepare(`SELECT id,email,name,picture 
+							FROM users WHERE id != $1`)
+	if err != nil {
+		return users, err
+	}
+	defer stmt.Close()
+
+	rows, qerr := stmt.Query(uid)
+	if qerr != nil {
+		return users, qerr
+	}
+
+	var u utils.UserDetails
+	for rows.Next() {
+		err = rows.Scan(&u.Id, &u.Email, &u.Name, &u.Picture)
+		if err != nil {
+			return users, err
+		}
+
+		users = append(users, u)
+	}
+
+	return users, nil
+}

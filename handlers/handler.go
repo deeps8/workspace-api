@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"os"
 	"work-space-backend/handlers/auth"
+	userHandler "work-space-backend/handlers/user"
+	"work-space-backend/handlers/workspace"
 
 	"github.com/labstack/echo/v4"
 	"golang.org/x/oauth2"
@@ -26,8 +28,22 @@ func InitHandler(app *echo.Group) {
 
 	app.GET("/session", auth.GetUserFromSession)
 
+	userRoute := app.Group("/user")
+	{
+		userRoute.Use(auth.AuthGuard)
+		userRoute.GET("", userHandler.FetchAllUsers)
+	}
+
+	workRoute := app.Group("/workspace")
+	{
+		workRoute.Use(auth.AuthGuard)
+		workRoute.GET("", workspace.FetchAllWorkspaces)
+		workRoute.POST("", workspace.CreateWorkspace)
+	}
+
 	authGrp := app.Group("/auth")
 	{
+		authGrp.Use(auth.UnAuthGuard)
 		/*	Creating routes for
 			- signup : which will redirect user to Google Ouath page
 			- google/redirect : which will handle the redirection of user from Oauth page
@@ -35,4 +51,5 @@ func InitHandler(app *echo.Group) {
 		authGrp.GET("/google/signup", auth.GoogleSignup)
 		authGrp.GET("/google/redirect", auth.GoogleRedirect)
 	}
+	app.GET("/logout", auth.LogoutUser)
 }
