@@ -58,3 +58,27 @@ CREATE TABLE workspace (
 --     users o ON w.owner = o.id
 -- GROUP BY 
 --     w.id, o.id;
+
+
+-- Get single workspace with slugname (members,owner,boards)
+-- SELECT 
+--     w.*,
+--     o.id as user_id,
+--     o.email,
+--     o.name as user_name,
+--     o.picture,
+--     json_agg(DISTINCT u) AS members,
+--     json_agg(DISTINCT b) AS boards
+-- FROM 
+--     workspace w 
+-- LEFT JOIN 
+--     member m ON m.space_id = w.id
+-- LEFT JOIN 
+--     users u ON m.user_id = u.id
+-- LEFT JOIN 
+--     board b ON b.space_id = w.id
+-- JOIN 
+--     users o ON w.owner = o.id
+-- WHERE w.slug = 'WORKSPACE-NAME'
+-- GROUP BY 
+--     w.id, o.id

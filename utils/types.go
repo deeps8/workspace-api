@@ -64,3 +64,23 @@ type SpaceGetDTO struct {
 	OwnerDetails UserDetails   `json:"ownerdetails"`
 	Members      []UserDetails `json:"members"`
 }
+
+type BoardDTO struct {
+	Id      string `json:"id"`
+	Name    string `json:"name"`
+	Slug    string `json:"slug"`
+	Type    string `json:"type"`
+	Data    string `json:"data"`
+	Owner   string `json:"owner"`
+	SpaceId string `json:"space_id"`
+}
+
+type SpaceGetBoardDTO struct {
+	SpaceGetDTO
+	Boards []BoardDTO `json:"boards"`
+}
+
+type RdbDataType struct {
+	Data   string `json:"data"`
+	Synced bool   `json:"synced"`
+}

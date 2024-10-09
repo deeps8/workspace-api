@@ -1,6 +1,7 @@
 package workspace
 
 import (
+	"log"
 	"net/http"
 	"work-space-backend/database"
 	"work-space-backend/utils"
@@ -36,10 +37,26 @@ func CreateWorkspace(c echo.Context) error {
 }
 
 func FetchAllWorkspaces(c echo.Context) error {
-
+	spaceSlug := c.QueryParams().Get("slug")
+	log.Print(spaceSlug)
+	if spaceSlug != "" {
+		return FetchSpaceWithSlug(c)
+	}
 	spaces, err := database.GetAllWorkspace()
 	if err != nil {
 		return c.JSON(http.StatusNotImplemented, err)
 	}
 	return c.JSON(http.StatusOK, utils.Res{Message: "Got all Workspaces", Data: spaces, Ok: true})
+}
+
+func FetchSpaceWithSlug(c echo.Context) error {
+	spaceSlug := c.QueryParams().Get("slug")
+	if spaceSlug == "" {
+		return c.JSON(http.StatusBadRequest, utils.Res{Message: "Empty Workspace name", Ok: false})
+	}
+	spaces, err := database.GetSingleWorkspace("", spaceSlug)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, utils.Res{Message: "Worspace not found with name: " + spaceSlug, Ok: false})
+	}
+	return c.JSON(http.StatusOK, utils.Res{Message: "Got Workspaces with Boards", Data: spaces, Ok: true})
 }

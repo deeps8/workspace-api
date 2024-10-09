@@ -6,10 +6,12 @@ import (
 	"strings"
 	"work-space-backend/database"
 	"work-space-backend/handlers"
+	cronjob "work-space-backend/handlers/cron-job"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
@@ -41,5 +43,15 @@ func main() {
 	if port == "" {
 		port = "42069"
 	}
+
+	opt, err := redis.ParseURL(os.Getenv("REDIS"))
+	if err != nil {
+		panic(err)
+	}
+
+	database.Rdb = redis.NewClient(opt)
+
+	cronjob.SyncDb()
 	app.Logger.Fatal(app.Start("0.0.0.0:" + port))
+
 }

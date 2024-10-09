@@ -6,6 +6,7 @@ import (
 	"os"
 
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 )
 
 /*
@@ -18,6 +19,7 @@ type DB struct {
 }
 
 var Db *DB
+var Rdb *redis.Client
 
 func NewDBconn() *DB {
 	// open the DB driver by its name and DB sourse

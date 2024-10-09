@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 	"work-space-backend/handlers/auth"
+	"work-space-backend/handlers/board"
 	userHandler "work-space-backend/handlers/user"
 	"work-space-backend/handlers/workspace"
 
@@ -39,6 +40,17 @@ func InitHandler(app *echo.Group) {
 		workRoute.Use(auth.AuthGuard)
 		workRoute.GET("", workspace.FetchAllWorkspaces)
 		workRoute.POST("", workspace.CreateWorkspace)
+
+		boardRoute := workRoute.Group("/board")
+		{
+			boardRoute.POST("", board.CreateBoard)
+		}
+	}
+
+	wsRoute := app.Group("/ws")
+	{
+		wsRoute.Use(auth.AuthGuard)
+		wsRoute.GET("", workspace.ServeRoomWs)
 	}
 
 	authGrp := app.Group("/auth")
