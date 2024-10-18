@@ -22,6 +22,7 @@ func CreateBoard(c echo.Context) error {
 
 	brd.Slug = utils.GenerateSlug(brd.Name)
 	brd.Owner = user.Id
+	brd.Data = "{}"
 	log.Printf("%+v", brd)
 	res, err := database.InsertBoard(brd)
 	if err != nil {

@@ -46,7 +46,7 @@ func ServeRoomWs(c echo.Context) error {
 		4. get the "data" from redis if not then fetch from db
 	*/
 	hub, ok := hubList.Hubs[roomid]
-	log.Printf("Roomid : %v", hub)
+	log.Printf("Roomid : %v", ok)
 	if !ok {
 		log.Printf("Room Does not exists")
 		// room does not exists, create one
@@ -61,23 +61,24 @@ func ServeRoomWs(c echo.Context) error {
 	if rerr != nil || rdata == "" {
 		brd, berr := database.SelectBordData(roomid)
 		if berr != nil {
-			return c.JSON(http.StatusNotFound, utils.Res{Message: berr.Error(), Ok: false})
+			log.Printf("Status: %v", http.StatusNotFound)
 		}
 		brdData.Data = brd.Data
 		brdData.Synced = true
 		brdJson, err := json.Marshal(brdData)
+		log.Printf("BOARD : %v", brdData)
 		if err != nil {
-			log.Fatalf("Error marshaling struct to JSON: %v", err)
+			log.Printf("Error marshaling struct to JSON: %v", err)
 		}
 
 		err = database.Rdb.Set(context.Background(), roomid, string(brdJson), 0).Err()
 		if err != nil {
-			log.Fatalf("Error setting value in Redis: %v", err)
+			log.Printf("Error setting value in Redis: %v", err)
 		}
 	} else {
 		err := json.Unmarshal([]byte(rdata), &brdData)
 		if err != nil {
-			log.Fatalf("Error unmarshaling JSON from Redis: %v", err)
+			log.Printf("Error unmarshaling JSON from Redis: %v", err)
 		}
 	}
 

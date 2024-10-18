@@ -5,8 +5,8 @@ import "work-space-backend/utils"
 func InsertBoard(brd utils.BoardDTO) (utils.BoardDTO, error) {
 	var b utils.BoardDTO
 	stmt, err := Db.Prepare(`
-	INSERT INTO board (name,type,slug,owner,space_id)
-	SELECT $1, $2, $3, $4, $5
+	INSERT INTO board (name,type,slug,owner,space_id,data)
+	SELECT $1, $2, $3, $4, $5, $6
 	RETURNING *`)
 
 	if err != nil {
@@ -14,7 +14,7 @@ func InsertBoard(brd utils.BoardDTO) (utils.BoardDTO, error) {
 	}
 	defer stmt.Close()
 
-	row, qerr := stmt.Query(brd.Name, brd.Type, brd.Slug, brd.Owner, brd.SpaceId)
+	row, qerr := stmt.Query(brd.Name, brd.Type, brd.Slug, brd.Owner, brd.SpaceId, brd.Data)
 
 	if qerr != nil {
 		return b, qerr
